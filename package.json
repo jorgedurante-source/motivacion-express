@@ -1,0 +1,11 @@
+{
+  "name": "motivacion-express",
+  "version": "1.0.0",
+  "description": "App de frases motivacionales graciosas",
+  "scripts": {
+    "start": "serve . -p $PORT"
+  },
+  "dependencies": {
+    "serve": "^14.2.0"
+  }
+}

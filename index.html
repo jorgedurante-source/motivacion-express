@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motivación Express</title>
+    <style>
+        :root {
+            --bg-color: #2c3e50;
+            --container-bg: rgba(255, 255, 255, 0.05);
+            --text-color: #ecf0f1;
+            --accent-color: #3498db;
+            --progress-bg: #34495e;
+            --transition-speed: 0.6s;
+        }
+
+        body.happy {
+            --bg-color: #f6d365;
+            --container-bg: rgba(255, 255, 255, 0.8);
+            --text-color: #2c3e50;
+            --accent-color: #e67e22;
+            --progress-bg: #f39c12;
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            transition: background var(--transition-speed) ease, color var(--transition-speed) ease;
+            overflow: hidden;
+        }
+
+        .container {
+            background-color: var(--container-bg);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            width: 95%;
+            max-width: 550px;
+            backdrop-filter: blur(15px);
+            transition: all var(--transition-speed) ease;
+            position: relative;
+            z-index: 10;
+        }
+
+        h1 {
+            margin-bottom: 2rem;
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+
+        .avatar-container {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 2rem;
+            position: relative;
+        }
+
+        .avatar-container svg {
+            width: 100%;
+            height: 100%;
+            transition: all var(--transition-speed) cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .phrase-container {
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 2rem;
+            padding: 0 1rem;
+        }
+
+        .phrase {
+            font-size: 1.2rem;
+            font-style: italic;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        .phrase.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 12px;
+            background-color: var(--progress-bg);
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: var(--accent-color);
+            border-radius: 10px;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.8s ease;
+            box-shadow: 0 0 10px var(--accent-color);
+        }
+
+        .btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            filter: brightness(1.1);
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .final-message {
+            display: none;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 2rem;
+            animation: bounce 1s infinite alternate;
+        }
+
+        @keyframes bounce {
+            from {
+                transform: scale(1);
+            }
+
+            to {
+                transform: scale(1.1);
+            }
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f1c40f;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .face-bg {
+            fill: #e0e0e0;
+            transition: fill var(--transition-speed);
+        }
+
+        body.happy .face-bg {
+            fill: #FFD93D;
+        }
+
+        .eyes {
+            fill: #333;
+        }
+
+        .mouth {
+            stroke: #333;
+            stroke-width: 3;
+            fill: none;
+            stroke-linecap: round;
+            transition: d var(--transition-speed), stroke-width var(--transition-speed);
+        }
+
+        .eyebrows {
+            stroke: #333;
+            stroke-width: 2;
+            fill: none;
+            stroke-linecap: round;
+            transition: d var(--transition-speed);
+        }
+
+        .cheek {
+            opacity: 0;
+            transition: opacity var(--transition-speed);
+        }
+
+        body.happy .cheek {
+            opacity: 0.6;
+        }
+
+        .photo-container {
+            width: 300px;
+            height: 300px;
+            margin: 0 auto 1.5rem;
+            border-radius: 20px;
+            /* Cambiado a esquinas redondeadas en lugar de círculo para ver mejor la foto */
+            overflow: hidden;
+            border: 5px solid white;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            transition: all var(--transition-speed);
+            background-color: #000;
+        }
+
+        .photo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.5s ease;
+        }
+
+        .avatar-container {
+            width: 60px;
+            /* Reducido para dar más protagonismo a la foto */
+            height: 60px;
+            margin: 0 auto 1rem;
+            position: relative;
+            opacity: 0.8;
+        }
+
+        .btn-restart {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container" id="mainContainer">
+        <h1>Motivación Express</h1>
+
+        <div class="photo-container">
+            <img src="estado1.jpg" id="personPhoto" alt="Estado actual">
+        </div>
+
+        <div class="avatar-container">
+            <svg viewBox="0 0 100 100" id="avatar">
+                <!-- Head -->
+                <circle cx="50" cy="50" r="45" class="face-bg" />
+
+                <!-- Eyebrows -->
+                <path d="M30 35 L45 40" class="eyebrows" id="eyebrowL" />
+                <path d="M70 35 L55 40" class="eyebrows" id="eyebrowR" />
+
+                <!-- Eyes -->
+                <circle cx="35" cy="45" r="4" class="eyes" />
+                <circle cx="65" cy="45" r="4" class="eyes" />
+
+                <!-- Mouth -->
+                <path d="M35 75 Q50 70 65 75" class="mouth" id="mouthPath" />
+
+                <!-- Cheeks (visible only when happy) -->
+                <circle cx="25" cy="65" r="8" fill="#ffb6b6" class="cheek" id="cheekL" />
+                <circle cx="75" cy="65" r="8" fill="#ffb6b6" class="cheek" id="cheekR" />
+            </svg>
+        </div>
+
+        <div class="phrase-container">
+            <p class="phrase" id="phraseDisplay">¡Hola! ¿Un mal día?</p>
+        </div>
+
+        <button class="btn" id="motivateBtn">¡Necesito motivación!</button>
+        <div class="final-message" id="finalMsg">¡Ya me siento mucho mejor! 🎉</div>
+
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+    </div>
+
+    <script>
+        const phrases = [
+            "Si la vida te da limones, exprímelós en el ojo de tus problemas.",
+            "Hoy es un gran día para fingir que todo va bien.",
+            "Tú puedes. Probablemente. Hay un 60% de chances.",
+            "No eres un fracaso, eres un prototipo en desarrollo.",
+            "Respira hondo. El oxígeno es gratis, aprovéchalo.",
+            "Eres más fuerte que tu contraseña olvidada.",
+            "Si ya sobreviviste todos tus peores días, tienes un 100% de efectividad.",
+            "El éxito es como el Wi-Fi: invisible pero poderoso cuando funciona.",
+            "Hoy no te rindas. Mañana quizás, pero hoy no.",
+            "Eres único. Como todos los demás, pero en serio.",
+            "Los errores son solo victorias con mala ortografía.",
+            "Si todo falla, al menos tienes una buena historia que contar.",
+            "Tu potencial es ilimitado, como tu lista de series pendientes.",
+            "Cada experto fue alguna vez un completo desastre. Sigue adelante.",
+            "No importa cuán lento vayas, sigues adelantando a los que están en el sofá.",
+            "El universo te tiene algo preparado. Probablemente algo raro, pero algo.",
+            "Eres capaz de grandes cosas. Tu historial de búsqueda lo desmiente, pero igual.",
+            "Un paso a la vez. O dos. O tres. Nadie está cronometrando.",
+            "Si la situación es difícil, tú eres más difícil todavía.",
+            "No te compares con otros. Ellos también están improvisando.",
+            "Hoy podría ser el día. O no. Pero podría.",
+            "Eres como el café: necesitas presión para sacar lo mejor de ti.",
+            "Tu peor día tiene fecha de vencimiento.",
+            "Piensa en positivo. O al menos en neutro, que ya es algo.",
+            "Fallaste? Perfecto, ya tienes experiencia en algo.",
+            "El caos es solo organización con más personalidad.",
+            "Si la vida fuera fácil, no tendríamos tanto material para quejarnos.",
+            "Eres la persona más preparada para tu propia vida. Por descarte, pero igual.",
+            "Tu momento llegará. El tráfico también llega, y siempre llega.",
+            "No todo el que vaga está perdido. Aunque tú quizás sí un poco.",
+            "Haz lo que puedas, con lo que tengas, donde estés. Google el resto.",
+            "Eres imparable. Técnicamente. A menos que haya una pared.",
+            "Este problema también pasará. Como el Wi-Fi malo: eventualmente.",
+            "Brillas con luz propia. Puede que débil, pero propia.",
+            "La vida es corta. Demasiado corta para no comer el postre.",
+            "Eres más inteligente de lo que crees. El umbral es bajo, pero aplica.",
+            "Si hoy fue difícil, mañana tiene otras dificultades completamente distintas. Variedad!",
+            "Confía en el proceso. El proceso también está confundido, pero confía.",
+            "No necesitas tenerlo todo claro. Ni Google Maps lo tiene siempre.",
+            "Eres un trabajo en progreso. Como las obras de tu ciudad, pero con final.",
+            "Cada mañana es una nueva oportunidad de cometer errores distintos.",
+            "Tu resiliencia es proporcional a la cantidad de lunes que has sobrevivido.",
+            "Sigue intentando. Los intentos acumulan puntos en algún lado, seguro.",
+            "Eres más valiente que un correo enviado sin releer. Y eso es mucho.",
+            "La actitud lo es todo. La actitud y tener snacks cerca.",
+            "Hoy hiciste tu mejor esfuerzo. Mañana el umbral baja un poco, tranquilo.",
+            "Si el plan A no funcionó, el abecedario tiene 26 letras más.",
+            "Eres exactamente lo que el mundo necesita. Más o menos.",
+            "No existe el fracaso, solo el feedback con mala presentación.",
+            "Levántate. Sacúdete. Repite. Eso es todo el secreto, básicamente."
+        ];
+
+        let currentStep = 0;
+        let sessionPhrases = [...phrases];
+
+        const motivateBtn = document.getElementById('motivateBtn');
+        const progressBar = document.getElementById('progressBar');
+        const phraseDisplay = document.getElementById('phraseDisplay');
+        const mouthPath = document.getElementById('mouthPath');
+        const eyebrowL = document.getElementById('eyebrowL');
+        const eyebrowR = document.getElementById('eyebrowR');
+        const finalMsg = document.getElementById('finalMsg');
+
+        const avatarStates = [
+            { // 0: Angry/Bored (Initial)
+                mouth: "M35 75 Q50 70 65 75",
+                eyebrowL: "M30 35 L45 40",
+                eyebrowR: "M70 35 L55 40"
+            },
+            { // 1: Molesto
+                mouth: "M35 70 L65 70",
+                eyebrowL: "M30 38 L45 40",
+                eyebrowR: "M70 38 L55 40"
+            },
+            { // 2: Un poco mejor
+                mouth: "M35 72 L65 72",
+                eyebrowL: "M30 40 L45 40",
+                eyebrowR: "M70 40 L55 40"
+            },
+            { // 3: Neutral
+                mouth: "M35 75 L65 75",
+                eyebrowL: "M30 40 L45 40",
+                eyebrowR: "M70 40 L55 40"
+            },
+            { // 4: Casi sonriendo
+                mouth: "M35 75 Q50 80 65 75",
+                eyebrowL: "M30 35 Q37 32 45 35",
+                eyebrowR: "M70 35 Q62 32 55 35"
+            },
+            { // 5: Sonriendo suave
+                mouth: "M30 75 Q50 85 70 75",
+                eyebrowL: "M25 35 Q35 30 45 35",
+                eyebrowR: "M55 35 Q65 30 75 35",
+                strokeWidth: 4
+            },
+            { // 6: Muy feliz (Final)
+                mouth: "M30 70 Q50 90 70 70",
+                eyebrowL: "M25 35 Q35 25 45 35",
+                eyebrowR: "M55 35 Q65 25 75 35",
+                strokeWidth: 5
+            }
+        ];
+
+        const personPhoto = document.getElementById('personPhoto');
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function updateAvatar(stateIndex) {
+            const state = avatarStates[stateIndex];
+            mouthPath.setAttribute('d', state.mouth);
+            eyebrowL.setAttribute('d', state.eyebrowL);
+            eyebrowR.setAttribute('d', state.eyebrowR);
+            mouthPath.style.strokeWidth = state.strokeWidth || 3;
+
+            // Actualizar foto
+            const photoNum = Math.min(stateIndex + 1, 6);
+            personPhoto.style.opacity = 0;
+            setTimeout(() => {
+                personPhoto.src = `estado${photoNum}.jpg`;
+                personPhoto.style.opacity = 1;
+            }, 200);
+        }
+
+        function createConfetti() {
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.top = '-10px';
+                confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 70%, 60%)`;
+                confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+
+                document.body.appendChild(confetti);
+
+                const animation = confetti.animate([
+                    { transform: `translate3d(0, 0, 0) rotate(0deg)`, opacity: 1 },
+                    { transform: `translate3d(${(Math.random() - 0.5) * 200}px, 100vh, 0) rotate(${Math.random() * 360}deg)`, opacity: 0 }
+                ], {
+                    duration: Math.random() * 3000 + 2000,
+                    easing: 'cubic-bezier(0, .9, .57, 1)',
+                    delay: Math.random() * 2000
+                });
+
+                animation.onfinish = () => confetti.remove();
+            }
+        }
+
+        function handleMotivate() {
+            if (motivateBtn.textContent === "Empezar de nuevo") {
+                location.reload();
+                return;
+            }
+
+            if (currentStep >= 6) return;
+
+            currentStep++;
+
+            // Progress Bar
+            progressBar.style.width = (currentStep * (100 / 6)) + '%';
+
+            // Phrase animation
+            phraseDisplay.classList.remove('show');
+            setTimeout(() => {
+                const randomIndex = Math.floor(Math.random() * sessionPhrases.length);
+                const selectedPhrase = sessionPhrases.splice(randomIndex, 1)[0];
+                phraseDisplay.textContent = selectedPhrase;
+                phraseDisplay.classList.add('show');
+            }, 400);
+
+            // Avatar and Photo Update
+            updateAvatar(currentStep);
+
+            // Check if finished
+            if (currentStep === 6) {
+                setTimeout(() => {
+                    document.body.classList.add('happy');
+                    motivateBtn.textContent = "Empezar de nuevo";
+                    finalMsg.style.display = 'block';
+                    createConfetti();
+                }, 800);
+            }
+        }
+
+        function reset() {
+            currentStep = 0;
+            sessionPhrases = [...phrases];
+            shuffle(sessionPhrases);
+
+            document.body.classList.remove('happy');
+            progressBar.style.width = '0%';
+
+            phraseDisplay.classList.remove('show');
+            setTimeout(() => {
+                phraseDisplay.textContent = '¡Hola! ¿Un mal día?';
+                phraseDisplay.classList.add('show');
+            }, 400);
+
+            updateAvatar(0);
+
+            motivateBtn.style.display = 'inline-block';
+            finalMsg.style.display = 'none';
+            motivateBtn.disabled = false;
+        }
+
+        motivateBtn.addEventListener('click', handleMotivate);
+
+        // Initial setup
+        shuffle(sessionPhrases);
+        setTimeout(() => phraseDisplay.classList.add('show'), 500);
+    </script>
+</body>
+
+</html>
